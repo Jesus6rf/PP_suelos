@@ -58,11 +58,13 @@ if st.button("Registrar y Predecir"):
     # Separar datos para fertilidad (sin cultivo_encoded)
     input_data_fertilidad = input_data[feature_columns_fert]
     
-    # Hacer predicción de fertilidad
+    # Hacer predicción de fertilidad con probabilidades
     try:
+        fertilidad_probs = fertilidad_model.predict_proba(input_data_fertilidad)[0]
         predicted_fertilidad = int(fertilidad_model.predict(input_data_fertilidad)[0])  # Predicción binaria
         
-        # Hacer predicción de cultivo usando input_data con cultivo_encoded
+        # Hacer predicción de cultivo con probabilidades
+        cultivo_probs = cultivo_model.predict_proba(input_data)[0]
         predicted_cultivo_encoded = int(cultivo_model.predict(input_data)[0])  # Predicción de cultivo
         predicted_cultivo = str(label_encoder.inverse_transform([predicted_cultivo_encoded])[0])  # Convertir a texto
     except Exception as e:
@@ -70,8 +72,8 @@ if st.button("Registrar y Predecir"):
         st.stop()
     
     # Mostrar predicciones antes de enviarlas a la base de datos
-    st.write(f"Fertilidad predicha: {predicted_fertilidad}")
-    st.write(f"Cultivo predicho: {predicted_cultivo}")
+    st.write(f"Fertilidad predicha: {predicted_fertilidad} (Probabilidades: {fertilidad_probs})")
+    st.write(f"Cultivo predicho: {predicted_cultivo} (Probabilidades: {cultivo_probs})")
     
     # Generar valores de id y fecha_registro
     record_id = str(uuid.uuid4())
