@@ -69,9 +69,9 @@ elif menu == "Agregar Registro":
             st.session_state.fertilidad_pred = int(fertilidad_model.predict(input_data)[0])
             st.session_state.cultivo_pred = "Maíz" if st.session_state.fertilidad_pred == 1 else "Ninguno"
             
-            st.write(f"Fertilidad predicha: {'Fértil' if fertilidad_pred == 1 else 'Infértil'}")
-            if fertilidad_pred == 1:
-                st.write(f"Cultivo recomendado: {cultivo_pred}")
+            st.write(f"Fertilidad predicha: {'Fértil' if st.session_state.fertilidad_pred == 1 else 'Infértil'}")
+            if st.session_state.fertilidad_pred == 1:
+                st.write(f"Cultivo recomendado: {st.session_state.cultivo_pred}")
         except Exception as e:
             st.error(f"Error en la predicción: {e}")
     
