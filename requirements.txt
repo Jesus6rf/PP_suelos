@@ -3,4 +3,5 @@ pandas
 numpy
 supabase
 xgboost
-pickle5
+pickle
+scikit-learn
