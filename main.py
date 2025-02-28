@@ -49,24 +49,19 @@ densidad = st.number_input("Densidad", min_value=0.0, step=0.1)
 altitud = st.number_input("Altitud", min_value=0.0, step=0.1)
 
 if st.button("Registrar y Predecir"):
-    # Crear dataframe inicial sin cultivo_encoded
-    input_data_fertilidad = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, fosforo, potasio, humedad, densidad, altitud]],
-                                         columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud"])
+    # Crear dataframe con todas las variables, incluyendo cultivo_encoded
+    input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, fosforo, potasio, humedad, densidad, altitud, 0]],
+                               columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud", "cultivo_encoded"])
+    
+    # Separar datos para fertilidad (sin cultivo_encoded)
+    input_data_fertilidad = input_data.drop(columns=["cultivo_encoded"])
     
     # Hacer predicción de fertilidad
     try:
         predicted_fertilidad = int(fertilidad_model.predict(input_data_fertilidad)[0])  # Predicción binaria
         
-        # Crear datos para predicción de cultivo agregando cultivo_encoded
-        input_data_cultivo = input_data_fertilidad.copy()
-        input_data_cultivo["cultivo_encoded"] = 0  # Se asigna un valor dummy
-        
-        # Asegurar que el orden de las columnas sea el correcto
-        expected_columns_cultivo = ["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud", "cultivo_encoded"]
-        input_data_cultivo = input_data_cultivo[expected_columns_cultivo]
-        
-        # Predecir cultivo
-        predicted_cultivo_encoded = int(cultivo_model.predict(input_data_cultivo)[0])  # Predicción de cultivo
+        # Hacer predicción de cultivo usando input_data con cultivo_encoded
+        predicted_cultivo_encoded = int(cultivo_model.predict(input_data)[0])  # Predicción de cultivo
         predicted_cultivo = label_encoder.inverse_transform([predicted_cultivo_encoded])[0]  # Convertir a texto
     except Exception as e:
         st.error(f"Error en la predicción: {e}")
