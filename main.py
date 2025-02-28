@@ -37,15 +37,9 @@ except Exception as e:
 st.title("Gestión de Registros de Suelos")
 
 # 📌 Crear Pestañas
-menu = st.sidebar.radio("Selecciona una opción", ["Ver Registros", "Agregar Registro", "Editar Registro", "Eliminar Registro"])
+menu = st.sidebar.radio("Selecciona una opción", ["Agregar Registro", "Editar Registro", "Eliminar Registro"])
 
-if menu == "Ver Registros":
-    st.subheader("📌 Registros Existentes")
-    response = supabase.table(TABLE_NAME).select("*").execute()
-    data = pd.DataFrame(response.data) if response.data else pd.DataFrame()
-    st.dataframe(data) if not data.empty else st.write("No hay registros disponibles.")
-
-elif menu == "Agregar Registro":
+if menu == "Agregar Registro":
     st.subheader("📌 Agregar un Nuevo Registro")
     tipo_suelo = st.selectbox("Tipo de suelo", options=[1, 2, 3, 4], format_func=lambda x: {1: 'Arcilloso', 2: 'Arenoso', 3: 'Limoso', 4: 'Franco'}.get(x, 'Desconocido'))
     pH = st.number_input("pH del suelo", min_value=0.0, max_value=14.0, step=0.1)
