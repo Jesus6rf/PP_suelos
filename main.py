@@ -86,7 +86,7 @@ if st.button("Registrar y Predecir"):
     
     # Generar valores de id y fecha_registro
     record_response = supabase.table(TABLE_NAME).select("id").order("id", desc=True).limit(1).execute()
-    last_id = int(record_response.data[0]["id"]) if record_response.data and record_response.data[0]["id"] is not None else 0
+    last_id = int(record_response.data[0]["id"]) if record_response.data and record_response.data[0].get("id") else 0 if record_response.data and record_response.data[0]["id"] is not None else 0
     record_id = last_id + 1 if isinstance(last_id, int) else 1
     fecha_registro = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     
