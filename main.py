@@ -96,21 +96,35 @@ with tabs[1]:
             if record.data:
                 record_data = record.data[0]
                 st.write("### Datos Actuales")
-                
-                # Mostrar valores actuales y permitir cambios
+
+                # Guardar valores en session_state para que no se recarguen
+                if "record_data" not in st.session_state or st.session_state["record_id"] != record_id:
+                    st.session_state["record_id"] = record_id
+                    st.session_state["tipo_suelo"] = record_data["tipo_suelo"]
+                    st.session_state["pH"] = record_data["pH"]
+                    st.session_state["materia_organica"] = record_data["materia_organica"]
+                    st.session_state["conductividad"] = record_data["conductividad"]
+                    st.session_state["nitrogeno"] = record_data["nitrogeno"]
+                    st.session_state["fosforo"] = record_data["fosforo"]
+                    st.session_state["potasio"] = record_data["potasio"]
+                    st.session_state["humedad"] = record_data["humedad"]
+                    st.session_state["densidad"] = record_data["densidad"]
+                    st.session_state["altitud"] = record_data["altitud"]
+
+                # Mostrar y permitir edición de los valores guardados
                 tipo_suelo = st.selectbox("Tipo de suelo", [1, 2, 3, 4], 
-                          index=[1, 2, 3, 4].index(record_data["tipo_suelo"]),
-                          format_func=lambda x: {1: 'Arcilloso', 2: 'Arenoso', 3: 'Limoso', 4: 'Franco'}.get(x, 'Desconocido'),
-                          key="tipo_suelo_actualizar")  # Se agrega un key único
-                pH = st.number_input("pH del suelo", min_value=0.0, max_value=14.0, step=0.1, value=float(record_data["pH"]))
-                materia_organica = st.number_input("Materia orgánica", min_value=0.0, max_value=10.0, step=0.1, value=float(record_data["materia_organica"]))
-                conductividad = st.number_input("Conductividad eléctrica", min_value=0.0, max_value=5.0, step=0.1, value=float(record_data["conductividad"]))
-                nitrogeno = st.number_input("Nivel de Nitrógeno", min_value=0.0, max_value=5.0, step=0.1, value=float(record_data["nitrogeno"]))
-                fosforo = st.number_input("Nivel de Fósforo", min_value=0.0, max_value=500.0, step=0.1, value=float(record_data["fosforo"]))
-                potasio = st.number_input("Nivel de Potasio", min_value=0.0, step=0.1, value=float(record_data["potasio"]))
-                humedad = st.number_input("Humedad", min_value=0.0, step=0.1, value=float(record_data["humedad"]))
-                densidad = st.number_input("Densidad", min_value=0.0, step=0.1, value=float(record_data["densidad"]))
-                altitud = st.number_input("Altitud", min_value=0.0, step=0.1, value=float(record_data["altitud"]))
+                                          index=[1, 2, 3, 4].index(st.session_state["tipo_suelo"]),
+                                          format_func=lambda x: {1: 'Arcilloso', 2: 'Arenoso', 3: 'Limoso', 4: 'Franco'}.get(x, 'Desconocido'),
+                                          key="tipo_suelo_actualizar")
+                pH = st.number_input("pH del suelo", min_value=0.0, max_value=14.0, step=0.1, value=float(st.session_state["pH"]), key="ph_actualizar")
+                materia_organica = st.number_input("Materia orgánica", min_value=0.0, max_value=10.0, step=0.1, value=float(st.session_state["materia_organica"]), key="materia_organica_actualizar")
+                conductividad = st.number_input("Conductividad eléctrica", min_value=0.0, max_value=5.0, step=0.1, value=float(st.session_state["conductividad"]), key="conductividad_actualizar")
+                nitrogeno = st.number_input("Nivel de Nitrógeno", min_value=0.0, max_value=5.0, step=0.1, value=float(st.session_state["nitrogeno"]), key="nitrogeno_actualizar")
+                fosforo = st.number_input("Nivel de Fósforo", min_value=0.0, max_value=500.0, step=0.1, value=float(st.session_state["fosforo"]), key="fosforo_actualizar")
+                potasio = st.number_input("Nivel de Potasio", min_value=0.0, step=0.1, value=float(st.session_state["potasio"]), key="potasio_actualizar")
+                humedad = st.number_input("Humedad", min_value=0.0, step=0.1, value=float(st.session_state["humedad"]), key="humedad_actualizar")
+                densidad = st.number_input("Densidad", min_value=0.0, step=0.1, value=float(st.session_state["densidad"]), key="densidad_actualizar")
+                altitud = st.number_input("Altitud", min_value=0.0, step=0.1, value=float(st.session_state["altitud"]), key="altitud_actualizar")
 
                 if st.button("Predecir y Actualizar"):
                     # Preparar datos para la predicción
