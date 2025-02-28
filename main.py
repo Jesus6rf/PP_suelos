@@ -84,34 +84,15 @@ elif menu == "Agregar Registro":
             "potasio": float(potasio),
             "humedad": float(humedad),
             "densidad": float(densidad),
-            "altitud": float(altitud)
+            "altitud": float(altitud),
+            "fertilidad": fertilidad_pred,
+            "cultivo": cultivo_pred
         }
         try:
             response = supabase.table(TABLE_NAME).insert(new_record).execute()
             if response and response.data:
                 st.success("Registro agregado correctamente.")
-                st.experimental_rerun()
             else:
                 st.error("Error: No se pudo insertar el registro. Verifica los datos.")
         except Exception as e:
             st.error(f"Error en la inserción a Supabase: {e}")
-        st.success("Registro agregado correctamente.")
-        st.experimental_rerun()
-
-elif menu == "Editar Registro":
-    st.subheader("📌 Editar Registro Existente")
-    id_to_update = st.number_input("ID del registro a editar", min_value=1, step=1)
-    updated_ph = st.number_input("Nuevo pH del suelo", min_value=0.0, max_value=14.0, step=0.1)
-    updated_humedad = st.number_input("Nueva Humedad", min_value=0.0, step=0.1)
-    if st.button("Actualizar Registro"):
-        supabase.table(TABLE_NAME).update({"pH": updated_ph, "humedad": updated_humedad}).eq("id", id_to_update).execute()
-        st.success("Registro actualizado correctamente.")
-        st.experimental_rerun()
-
-elif menu == "Eliminar Registro":
-    st.subheader("📌 Eliminar Registro")
-    id_to_delete = st.number_input("ID del registro a eliminar", min_value=1, step=1)
-    if st.button("Eliminar Registro"):
-        supabase.table(TABLE_NAME).delete().eq("id", id_to_delete).execute()
-        st.success("Registro eliminado correctamente.")
-        st.experimental_rerun()
