@@ -93,8 +93,22 @@ if menu == "Agregar Registro":
 
 elif menu == "Editar Registro":
     st.subheader("✏️ Editar Registro")
-    st.write("Funcionalidad en desarrollo...")
+    registros = supabase.table(TABLE_NAME).select("*").execute()
+    if registros.data:
+        registro_id = st.selectbox("Selecciona un registro para editar", [r["id"] for r in registros.data])
+        if st.button("Cargar Datos"):
+            datos = next(r for r in registros.data if r["id"] == registro_id)
+            st.write(datos)
+    else:
+        st.write("No hay registros disponibles.")
 
 elif menu == "Eliminar Registro":
     st.subheader("🗑️ Eliminar Registro")
-    st.write("Funcionalidad en desarrollo...")
+    registros = supabase.table(TABLE_NAME).select("id").execute()
+    if registros.data:
+        registro_id = st.selectbox("Selecciona un registro para eliminar", [r["id"] for r in registros.data])
+        if st.button("Eliminar"):
+            supabase.table(TABLE_NAME).delete().eq("id", registro_id).execute()
+            st.success("Registro eliminado correctamente.")
+    else:
+        st.write("No hay registros disponibles.")
