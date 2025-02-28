@@ -103,3 +103,4 @@ elif menu == "Agregar Registro":
                 st.error("Error: No se pudo insertar el registro. Verifica los datos.")
         except Exception as e:
             st.error(f"Error en la inserción a Supabase: {e}")
+
