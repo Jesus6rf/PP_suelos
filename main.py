@@ -102,8 +102,8 @@ if st.button("Registrar y Predecir"):
         "humedad": float(humedad),
         "densidad": float(densidad),
         "altitud": float(altitud),
-        "fertilidad": predicted_fertilidad_text,
-        "cultivo": predicted_cultivo if predicted_fertilidad == 1 else "Ninguno"
+        "fertilidad": predicted_fertilidad,
+        "cultivo": predicted_cultivo
     }
     
     try:
