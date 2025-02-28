@@ -20,7 +20,8 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # Descargar modelo desde Supabase Storage con manejo de errores
 try:
     response = supabase.storage.from_(BUCKET_NAME).download(MODEL_FILE)
-    model = pickle.load(io.BytesIO(response))  # Convertir a BytesIO antes de deserializar
+    model_bytes = io.BytesIO(response)  # Convertir a objeto BytesIO
+    model = pickle.load(model_bytes)  # Cargar modelo con pickle
     print("Modelo cargado exitosamente")
 except Exception as e:
     st.error(f"Error al cargar el modelo: {e}")
@@ -34,7 +35,7 @@ pH = st.number_input("pH del suelo", min_value=0.0, step=0.1)
 materia_organica = st.number_input("Materia orgánica", min_value=0.0, step=0.1)
 conductividad = st.number_input("Conductividad eléctrica", min_value=0.0, step=0.1)
 nitrogeno = st.number_input("Nivel de Nitrógeno", min_value=0.0, step=0.1)
-fosforo = st.number_input("Nivel de Fósforo", min_value=0.0, step=0.1)
+fósforo = st.number_input("Nivel de Fósforo", min_value=0.0, step=0.1)
 potasio = st.number_input("Nivel de Potasio", min_value=0.0, step=0.1)
 humedad = st.number_input("Humedad", min_value=0.0, step=0.1)
 densidad = st.number_input("Densidad", min_value=0.0, step=0.1)
@@ -42,8 +43,8 @@ altitud = st.number_input("Altitud", min_value=0.0, step=0.1)
 
 if st.button("Registrar y Predecir"):
     # Crear dataframe temporal para predicción
-    input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, fosforo, potasio, humedad, densidad, altitud]],
-                               columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud"])
+    input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, fósforo, potasio, humedad, densidad, altitud]],
+                               columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fósforo", "potasio", "humedad", "densidad", "altitud"])
     
     # Hacer predicción
     try:
@@ -66,7 +67,7 @@ if st.button("Registrar y Predecir"):
         "materia_organica": materia_organica,
         "conductividad": conductividad,
         "nitrogeno": nitrogeno,
-        "fosforo": fosforo,
+        "fosforo": fósforo,
         "potasio": potasio,
         "humedad": humedad,
         "densidad": densidad,
