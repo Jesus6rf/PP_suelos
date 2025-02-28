@@ -1,5 +1,5 @@
 import os
-from supabase import create_client
+from supabase import create_client, Client
 import pickle
 import requests
 from io import BytesIO
