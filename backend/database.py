@@ -10,14 +10,14 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 
 supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Función para obtener datos de la tabla "suelos_registros"
+# Función para obtener datos de la tabla "suelo_registros"
 def obtener_registros():
-    response = supabase_client.table("suelos_registros").select("*").execute()
+    response = supabase_client.table("suelo_registros").select("*").execute()
     return response.data if response.data else []
 
 # Función para insertar un nuevo registro
 def insertar_registro(datos):
-    response = supabase_client.table("suelos_registros").insert(datos).execute()
+    response = supabase_client.table("suelo_registros").insert(datos).execute()
     return response.data if response.data else None
 
 # Función para leer el modelo directamente desde Supabase Storage sin descargarlo
