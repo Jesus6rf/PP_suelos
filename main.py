@@ -55,21 +55,25 @@ altitud = st.number_input("Altitud", min_value=0.0, step=0.1)
 
 if st.button("Registrar y Predecir"):
     # Crear dataframe con todas las variables
-    input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, 
-                                fosforo, potasio, humedad, densidad, altitud]],
+    input_data = pd.DataFrame([[float(tipo_suelo), float(pH), float(materia_organica), float(conductividad), float(nitrogeno), 
+                                float(fosforo), float(potasio), float(humedad), float(densidad), float(altitud)]],
                                columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", 
                                         "fosforo", "potasio", "humedad", "densidad", "altitud"])
     
     # Hacer predicción de fertilidad
     try:
+        st.write('Valores de entrada para fertilidad:', input_data)
         predicted_fertilidad = int(fertilidad_model.predict(input_data)[0])
+        st.write(f'Predicción cruda de fertilidad: {predicted_fertilidad}')
     except Exception as e:
         st.error(f"Error en la predicción de fertilidad: {e}")
         st.stop()
     
     # Hacer predicción de cultivo
     try:
+        st.write('Valores de entrada para cultivo:', input_data)
         predicted_cultivo_encoded = int(cultivo_model.predict(input_data)[0])
+        st.write(f'Predicción cruda de cultivo: {predicted_cultivo_encoded}')
     except Exception as e:
         st.error(f"Error en la predicción de cultivo: {e}")
         st.stop()
