@@ -103,7 +103,7 @@ with tabs[1]:
                 st.session_state.record_data = record.data[0]
             else:
                 st.warning("Registro no encontrado. Verifica el ID ingresado.")
-                st.session_state.record_data = None  # Resetear datos si no se encuentra
+                st.session_state.record_data = None 
         except Exception as e:
             st.error(f"Error al cargar el registro: {e}")
 
