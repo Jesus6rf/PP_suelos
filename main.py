@@ -37,7 +37,7 @@ except Exception as e:
 st.title("Gestión de Registros de Suelos")
 
 # 📌 Crear Pestañas
-menu = st.sidebar.radio("Selecciona una opción", ["Agregar Registro", "Actualizar Registro", "Eliminar Registro"])
+menu = st.sidebar.radio("Selecciona una opción", ["Agregar Registro", "Actualizar Registro", "Eliminar Registro", "Ver Registros"])
 
 if menu == "Agregar Registro":
     st.subheader("📌 Agregar un Nuevo Registro")
@@ -64,30 +64,6 @@ if menu == "Agregar Registro":
                 st.write(f"Cultivo recomendado: {cultivo_pred}")
         except Exception as e:
             st.error(f"Error en la predicción: {e}")
-    
-    if st.button("Registrar Nuevo Suelo"):
-        fecha_registro = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-        new_record = {
-            "fecha_registro": fecha_registro,
-            "tipo_suelo": int(tipo_suelo),
-            "pH": float(pH),
-            "materia_organica": float(materia_organica),
-            "conductividad": float(conductividad),
-            "nitrogeno": float(nitrogeno),
-            "fosforo": float(fosforo),
-            "potasio": float(potasio),
-            "humedad": float(humedad),
-            "densidad": float(densidad),
-            "altitud": float(altitud)
-        }
-        try:
-            response = supabase.table(TABLE_NAME).insert(new_record).execute()
-            if response and response.data:
-                st.success("Registro agregado correctamente.")
-            else:
-                st.error("Error: No se pudo insertar el registro. Verifica los datos.")
-        except Exception as e:
-            st.error(f"Error en la inserción a Supabase: {e}")
 
 elif menu == "Actualizar Registro":
     st.subheader("🔄 Actualizar Registro")
@@ -96,20 +72,30 @@ elif menu == "Actualizar Registro":
         registro_id = st.selectbox("Selecciona un registro para actualizar", [r["id"] for r in registros.data])
         datos = next(r for r in registros.data if r["id"] == registro_id)
         
-        tipo_suelo = st.selectbox("Tipo de suelo", options=[1, 2, 3, 4], index=datos["tipo_suelo"]-1, format_func=lambda x: {1: 'Arcilloso', 2: 'Arenoso', 3: 'Limoso', 4: 'Franco'}.get(x, 'Desconocido'))
+        tipo_suelo = st.selectbox("Tipo de suelo", options=[1, 2, 3, 4], index=[1, 2, 3, 4].index(datos["tipo_suelo"]))
         input_data = {key: st.number_input(f"{key}", value=datos[key]) for key in ["pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud"]}
         
         if st.button("Predecir y Actualizar Registro"):
-            input_df = pd.DataFrame([[tipo_suelo] + list(input_data.values())], columns=["tipo_suelo"] + list(input_data.keys()))
+            input_df = pd.DataFrame([list(input_data.values())], columns=input_data.keys())
             fertilidad_pred = int(fertilidad_model.predict(input_df)[0])
             cultivo_pred = "Maíz" if fertilidad_pred == 1 else "Ninguno"
-            input_data.update({"tipo_suelo": tipo_suelo, "fertilidad": fertilidad_pred, "cultivo": cultivo_pred})
+            input_data.update({"fertilidad": fertilidad_pred, "cultivo": cultivo_pred})
             
             supabase.table(TABLE_NAME).update(input_data).eq("id", registro_id).execute()
             st.success("Registro actualizado correctamente.")
+            
+            st.write(f"Fertilidad predicha: {'Fértil' if fertilidad_pred == 1 else 'Infértil'}")
+            if fertilidad_pred == 1:
+                st.write(f"Cultivo recomendado: {cultivo_pred}")
+
+elif menu == "Ver Registros":
+    st.subheader("📋 Ver Registros")
+    registros = supabase.table(TABLE_NAME).select("*").execute()
+    if registros.data:
+        df = pd.DataFrame(registros.data)
+        st.dataframe(df)
     else:
         st.write("No hay registros disponibles.")
-
 
 elif menu == "Eliminar Registro":
     st.subheader("🗑️ Eliminar Registro")
