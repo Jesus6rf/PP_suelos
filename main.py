@@ -142,7 +142,7 @@ with tabs[2]:
 
                 supabase.table(TABLE_NAME).update({"fertilidad": predicted_fertilidad, "cultivo": predicted_cultivo}).eq("id", id_registro).execute()
                 st.success("Registro actualizado correctamente.")
-                st.experimental_rerun()
+                st.rerun()
 
             except Exception as e:
                 st.error(f"Error: {e}")
