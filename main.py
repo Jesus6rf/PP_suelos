@@ -1,4 +1,3 @@
-import pickle
 import pandas as pd
 import streamlit as st
 from supabase import create_client
@@ -6,34 +5,38 @@ import io
 import json
 import datetime
 import uuid
+import xgboost as xgb
 
 # Configuración de Supabase
 SUPABASE_URL = "https://kuztdsenxrumlvwygzdn.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1enRkc2VueHJ1bWx2d3lnemRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2OTI0NjksImV4cCI6MjA1NjI2ODQ2OX0.PhGg9A5k-UUoIc83LhLdETIl1WbUErRMBnzQwkRjlPc"
 BUCKET_NAME = "modelos"
-MODEL_FILE = "xgboost_multioutput.pkl"
 TABLE_NAME = "suelo_registros"
 
 # Crear cliente Supabase
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Descargar modelo desde Supabase Storage con manejo de errores
+# Descargar modelos desde Supabase
 try:
-    response = supabase.storage.from_(BUCKET_NAME).download(MODEL_FILE)
-    model_bytes = io.BytesIO(response)  # Convertir a objeto BytesIO
-    model_dict = pickle.load(model_bytes)  # Cargar el diccionario con los modelos
+    response_fert = supabase.storage.from_(BUCKET_NAME).download("fertilidad_model.json")
+    response_cult = supabase.storage.from_(BUCKET_NAME).download("cultivo_model.json")
     
-    # Extraer los modelos y el label encoder
-    fertilidad_model = model_dict["fertilidad_model"]
-    cultivo_model = model_dict["cultivo_model"]
-    label_encoder = model_dict["label_encoder"]
-    feature_columns_fert = model_dict["feature_columns_fert"]
-    feature_columns_cult = model_dict["feature_columns_cult"]
+    # Guardar temporalmente en archivos locales
+    with open("fertilidad_model.json", "wb") as f:
+        f.write(response_fert)
+    with open("cultivo_model.json", "wb") as f:
+        f.write(response_cult)
     
-    print("Modelos cargados exitosamente")
-    st.write("Modelos cargados exitosamente")
+    # Cargar modelos
+    fertilidad_model = xgb.XGBClassifier()
+    fertilidad_model.load_model("fertilidad_model.json")
+    
+    cultivo_model = xgb.XGBClassifier()
+    cultivo_model.load_model("cultivo_model.json")
+    
+    st.success("Modelos cargados exitosamente desde Supabase")
 except Exception as e:
-    st.error(f"Error al cargar el modelo: {e}")
+    st.error(f"Error al cargar los modelos: {e}")
     st.stop()
 
 st.title("Registro y Predicción de Suelos")
@@ -52,23 +55,26 @@ altitud = st.number_input("Altitud", min_value=0.0, step=0.1)
 
 if st.button("Registrar y Predecir"):
     # Crear dataframe con todas las variables
-    input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, fosforo, potasio, humedad, densidad, altitud, 0]],
-                               columns=feature_columns_cult)
+    input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, 
+                                fosforo, potasio, humedad, densidad, altitud]],
+                               columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", 
+                                        "fosforo", "potasio", "humedad", "densidad", "altitud"])
     
-    # Separar datos para fertilidad (sin cultivo_encoded)
-    input_data_fertilidad = input_data[feature_columns_fert]
-    
-    # Hacer predicción de fertilidad con probabilidades
+    # Hacer predicción de fertilidad
     try:
-        fertilidad_probs = fertilidad_model.predict_proba(input_data_fertilidad)[0]
-        predicted_fertilidad = int(fertilidad_model.predict(input_data_fertilidad)[0])  # Predicción binaria
-        
-        # Hacer predicción de cultivo con probabilidades
-        cultivo_probs = cultivo_model.predict_proba(input_data)[0]
-        predicted_cultivo_encoded = int(cultivo_model.predict(input_data)[0])  # Predicción de cultivo
-        predicted_cultivo = str(label_encoder.inverse_transform([predicted_cultivo_encoded])[0])  # Convertir a texto
+        predicted_fertilidad = int(fertilidad_model.predict(input_data)[0])
+        fertilidad_probs = fertilidad_model.predict_proba(input_data)[0]
     except Exception as e:
-        st.error(f"Error en la predicción: {e}")
+        st.error(f"Error en la predicción de fertilidad: {e}")
+        st.stop()
+    
+    # Hacer predicción de cultivo
+    try:
+        predicted_cultivo_encoded = int(cultivo_model.predict(input_data)[0])
+        predicted_cultivo = f"Cultivo {predicted_cultivo_encoded}"
+        cultivo_probs = cultivo_model.predict_proba(input_data)[0]
+    except Exception as e:
+        st.error(f"Error en la predicción de cultivo: {e}")
         st.stop()
     
     # Mostrar predicciones antes de enviarlas a la base de datos
@@ -97,19 +103,8 @@ if st.button("Registrar y Predecir"):
         "cultivo": predicted_cultivo
     }
     
-    # Verificar el contenido antes de la inserción
-    st.write("Nuevo registro a insertar:", new_record)
-    
     try:
         response = supabase.table(TABLE_NAME).insert(new_record).execute()
-        st.write("Respuesta de Supabase:", response)
+        st.success("Registro y predicción guardados correctamente.")
     except Exception as e:
         st.error(f"Error en la inserción a Supabase: {e}")
-        st.stop()
-    
-    if response and response.data:
-        st.success("Registro y predicción guardados correctamente.")
-        st.success(f"Predicción de fertilidad: {predicted_fertilidad}")
-        st.success(f"Predicción de cultivo: {predicted_cultivo}")
-    else:
-        st.error("Error al guardar los datos en Supabase.")
