@@ -1,4 +1,4 @@
 streamlit
-supabase-py
+supabase
 requests
 pickle5
