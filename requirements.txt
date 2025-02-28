@@ -1,4 +1,4 @@
-streamlit
 supabase
 requests
 pickle5
+streamlit
