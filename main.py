@@ -17,10 +17,14 @@ TABLE_NAME = "suelo_registros"
 # Crear cliente Supabase
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Descargar modelo desde Supabase Storage
-response = supabase.storage.from_(BUCKET_NAME).download(MODEL_FILE)
-model = pickle.load(io.BytesIO(response))
-print("Modelo cargado exitosamente")
+# Descargar modelo desde Supabase Storage con manejo de errores
+try:
+    response = supabase.storage.from_(BUCKET_NAME).download(MODEL_FILE)
+    model = pickle.loads(response)
+    print("Modelo cargado exitosamente")
+except Exception as e:
+    st.error(f"Error al cargar el modelo: {e}")
+    st.stop()
 
 st.title("Registro y Predicción de Suelos")
 
@@ -42,8 +46,12 @@ if st.button("Registrar y Predecir"):
                                columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud"])
     
     # Hacer predicción
-    prediction = model.predict(input_data)
-    predicted_fertilidad, predicted_cultivo = int(prediction[0, 0]), str(prediction[0, 1])
+    try:
+        prediction = model.predict(input_data)
+        predicted_fertilidad, predicted_cultivo = int(prediction[0, 0]), str(prediction[0, 1])
+    except Exception as e:
+        st.error(f"Error en la predicción: {e}")
+        st.stop()
     
     # Generar valores de id y fecha_registro
     record_id = str(uuid.uuid4())
