@@ -97,23 +97,24 @@ with tabs[1]:
                 record_data = record.data[0]
                 st.write("### Datos Actuales")
 
-                # Guardar valores en session_state para que no se recarguen
+                # Guardar valores en session_state para evitar recargas
                 if "record_data" not in st.session_state or st.session_state["record_id"] != record_id:
                     st.session_state["record_id"] = record_id
-                    st.session_state["tipo_suelo"] = record_data["tipo_suelo"]
-                    st.session_state["pH"] = record_data["pH"]
-                    st.session_state["materia_organica"] = record_data["materia_organica"]
-                    st.session_state["conductividad"] = record_data["conductividad"]
-                    st.session_state["nitrogeno"] = record_data["nitrogeno"]
-                    st.session_state["fosforo"] = record_data["fosforo"]
-                    st.session_state["potasio"] = record_data["potasio"]
-                    st.session_state["humedad"] = record_data["humedad"]
-                    st.session_state["densidad"] = record_data["densidad"]
-                    st.session_state["altitud"] = record_data["altitud"]
+                    st.session_state["tipo_suelo"] = record_data.get("tipo_suelo", 1)
+                    st.session_state["pH"] = record_data.get("pH", 7.0)
+                    st.session_state["materia_organica"] = record_data.get("materia_organica", 0.5)
+                    st.session_state["conductividad"] = record_data.get("conductividad", 0.1)
+                    st.session_state["nitrogeno"] = record_data.get("nitrogeno", 0.1)
+                    st.session_state["fosforo"] = record_data.get("fosforo", 10.0)
+                    st.session_state["potasio"] = record_data.get("potasio", 10.0)
+                    st.session_state["humedad"] = record_data.get("humedad", 10.0)
+                    st.session_state["densidad"] = record_data.get("densidad", 1.0)
+                    st.session_state["altitud"] = record_data.get("altitud", 100.0)
 
-                # Mostrar y permitir edición de los valores guardados
+                # Mostrar y permitir edición de valores guardados
                 tipo_suelo = st.selectbox("Tipo de suelo", [1, 2, 3, 4], 
-                                          index=[1, 2, 3, 4].index(st.session_state["tipo_suelo"]),
+                                          index=[1, 2, 3, 4].index(st.session_state["tipo_suelo"])
+                                          if st.session_state["tipo_suelo"] in [1, 2, 3, 4] else 0,
                                           format_func=lambda x: {1: 'Arcilloso', 2: 'Arenoso', 3: 'Limoso', 4: 'Franco'}.get(x, 'Desconocido'),
                                           key="tipo_suelo_actualizar")
                 pH = st.number_input("pH del suelo", min_value=0.0, max_value=14.0, step=0.1, value=float(st.session_state["pH"]), key="ph_actualizar")
@@ -157,6 +158,9 @@ with tabs[1]:
                     }
                     supabase.table(TABLE_NAME).update(updated_record).eq("id", record_id).execute()
                     st.success(f"Registro con ID {record_id} actualizado correctamente.")
+
+                    # Forzar la recarga para evitar inconsistencias
+                    st.experimental_rerun()
 
             else:
                 st.error("No se encontró un registro con ese ID.")
