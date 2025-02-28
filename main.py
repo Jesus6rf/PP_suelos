@@ -43,11 +43,11 @@ st.title("Registro y Predicción de Suelos")
 
 # Formulario para ingreso de datos
 tipo_suelo = st.selectbox("Tipo de suelo", options=[1, 2, 3, 4], format_func=lambda x: {1: 'Arcilloso', 2: 'Arenoso', 3: 'Limoso', 4: 'Franco'}.get(x, 'Desconocido'))
-pH = st.number_input("pH del suelo", min_value=0.0, step=0.1)
-materia_organica = st.number_input("Materia orgánica", min_value=0.0, step=0.1)
-conductividad = st.number_input("Conductividad eléctrica", min_value=0.0, step=0.1)
-nitrogeno = st.number_input("Nivel de Nitrógeno", min_value=0.0, step=0.1)
-fosforo = st.number_input("Nivel de Fósforo", min_value=0.0, step=0.1)
+pH = st.number_input("pH del suelo", min_value=0.0, max_value=14.0, step=0.1)  # pH entre 0 y 14
+materia_organica = st.number_input("Materia orgánica", min_value=0.0, max_value=10.0, step=0.1)  # Materia orgánica entre 0 y 10
+conductividad = st.number_input("Conductividad eléctrica", min_value=0.0, max_value=5.0, step=0.1)  # Conductividad máxima 5 dS/m
+nitrogeno = st.number_input("Nivel de Nitrógeno", min_value=0.0, max_value=5.0, step=0.1)  # Nitrógeno entre 0 y 5
+fosforo = st.number_input("Nivel de Fósforo", min_value=0.0, max_value=500.0, step=0.1)  # Fósforo entre 0 y 500
 potasio = st.number_input("Nivel de Potasio", min_value=0.0, step=0.1)
 humedad = st.number_input("Humedad", min_value=0.0, step=0.1)
 densidad = st.number_input("Densidad", min_value=0.0, step=0.1)
