@@ -91,6 +91,10 @@ with tabs[1]:
     # Inicializar variable de sesión
     if "record_data" not in st.session_state:
         st.session_state.record_data = None
+    if "last_fertilidad" not in st.session_state:
+        st.session_state.last_fertilidad = None
+    if "last_cultivo" not in st.session_state:
+        st.session_state.last_cultivo = None
 
     if st.button("Cargar Registro"):
         try:
@@ -140,8 +144,9 @@ with tabs[1]:
                     cultivos = ["Trigo", "Maíz", "Caña de Azúcar", "Algodón", "Arroz", "Papa", "Cebolla", "Tomate", "Batata", "Brócoli", "Café"]
                     predicted_cultivo = cultivos[predicted_cultivo_encoded] if predicted_cultivo_encoded < len(cultivos) else "Desconocido"
 
-                st.write(f"**Fertilidad Predicha:** {predicted_fertilidad_text}")
-                st.write(f"**Cultivo Predicho:** {predicted_cultivo}")
+                # Guardar resultados en session_state
+                st.session_state["last_fertilidad"] = predicted_fertilidad_text
+                st.session_state["last_cultivo"] = predicted_cultivo
 
                 # Construir datos de actualización asegurando el tipo correcto
                 update_record = {
@@ -156,7 +161,7 @@ with tabs[1]:
                     "densidad": float(densidad),
                     "altitud": float(altitud),
                     "fertilidad": int(predicted_fertilidad),
-                    "cultivo": str(predicted_cultivo)  # Convertir a string
+                    "cultivo": str(predicted_cultivo)
                 }
 
                 # Intentar actualizar en Supabase y verificar la respuesta
@@ -172,7 +177,10 @@ with tabs[1]:
             except Exception as e:
                 st.error(f"Error: {e}")
 
-
+    # Mostrar predicción después de la recarga
+    if st.session_state["last_fertilidad"] and st.session_state["last_cultivo"]:
+        st.write(f"**Fertilidad Predicha:** {st.session_state['last_fertilidad']}")
+        st.write(f"**Cultivo Predicho:** {st.session_state['last_cultivo']}")
 
 # ------------------------ PESTAÑA 3: VISUALIZAR Y ELIMINAR ------------------------
 with tabs[2]:
