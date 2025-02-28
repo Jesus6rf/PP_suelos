@@ -49,18 +49,18 @@ densidad = st.number_input("Densidad", min_value=0.0, step=0.1)
 altitud = st.number_input("Altitud", min_value=0.0, step=0.1)
 
 if st.button("Registrar y Predecir"):
-    # Crear dataframe temporal para predicción
-    input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, fosforo, potasio, humedad, densidad, altitud]],
-                               columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud"])
+    # Crear dataframe temporal para predicción con cultivo_encoded agregado
+    input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, fosforo, potasio, humedad, densidad, altitud, 0]],
+                               columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud", "cultivo_encoded"])
     
     # Asegurar que las columnas coincidan con el modelo entrenado
-    expected_columns = ["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud"]
+    expected_columns = ["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud", "cultivo_encoded"]
     input_data = input_data[expected_columns]
     
     # Hacer predicción con ambos modelos
     try:
         predicted_fertilidad = int(fertilidad_model.predict(input_data)[0])  # Predicción binaria
-        predicted_cultivo_encoded = int(cultivo_model.predict(input_data)[0])  # Predicción de cultivo en código numérico
+        predicted_cultivo_encoded = int(cultivo_model.predict(input_data.drop(columns=["cultivo_encoded"]))[0])  # Predicción de cultivo sin cultivo_encoded
         predicted_cultivo = label_encoder.inverse_transform([predicted_cultivo_encoded])[0]  # Convertir a texto
     except Exception as e:
         st.error(f"Error en la predicción: {e}")
