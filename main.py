@@ -20,7 +20,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # Descargar modelo desde Supabase Storage con manejo de errores
 try:
     response = supabase.storage.from_(BUCKET_NAME).download(MODEL_FILE)
-    model = pickle.loads(response)
+    model = pickle.load(io.BytesIO(response))  # Convertir a BytesIO antes de deserializar
     print("Modelo cargado exitosamente")
 except Exception as e:
     st.error(f"Error al cargar el modelo: {e}")
