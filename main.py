@@ -3,6 +3,7 @@ import pandas as pd
 import supabase
 import xgboost as xgb
 import numpy as np
+import tempfile
 from io import StringIO
 
 # Configuración de Supabase
@@ -14,8 +15,16 @@ supabase_client = supabase.create_client(SUPABASE_URL, SUPABASE_KEY)
 # Cargar modelo desde Supabase Storage
 def load_model():
     response = supabase_client.storage.from_("modelos").download("xgboost_multioutput.json")
+    
+    # Guardar el modelo en un archivo temporal
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as temp_file:
+        temp_file.write(response)
+        temp_path = temp_file.name  # Obtener la ruta del archivo
+    
+    # Cargar el modelo desde el archivo temporal
     model = xgb.Booster()
-    model.load_model(response)
+    model.load_model(temp_path)
+    
     return model
 
 model = load_model()
