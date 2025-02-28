@@ -64,7 +64,7 @@ if st.button("Registrar y Predecir"):
         
         # Hacer predicción de cultivo usando input_data con cultivo_encoded
         predicted_cultivo_encoded = int(cultivo_model.predict(input_data)[0])  # Predicción de cultivo
-        predicted_cultivo = label_encoder.inverse_transform([predicted_cultivo_encoded])[0]  # Convertir a texto
+        predicted_cultivo = str(label_encoder.inverse_transform([predicted_cultivo_encoded])[0])  # Convertir a texto
     except Exception as e:
         st.error(f"Error en la predicción: {e}")
         st.stop()
@@ -81,19 +81,23 @@ if st.button("Registrar y Predecir"):
     new_record = {
         "id": record_id,
         "fecha_registro": fecha_registro,
-        "tipo_suelo": tipo_suelo,
-        "pH": pH,
-        "materia_organica": materia_organica,
-        "conductividad": conductividad,
-        "nitrogeno": nitrogeno,
-        "fosforo": fosforo,
-        "potasio": potasio,
-        "humedad": humedad,
-        "densidad": densidad,
-        "altitud": altitud,
-        "fertilidad": predicted_fertilidad,
+        "tipo_suelo": int(tipo_suelo),
+        "pH": float(pH),
+        "materia_organica": float(materia_organica),
+        "conductividad": float(conductividad),
+        "nitrogeno": float(nitrogeno),
+        "fosforo": float(fosforo),
+        "potasio": float(potasio),
+        "humedad": float(humedad),
+        "densidad": float(densidad),
+        "altitud": float(altitud),
+        "fertilidad": int(predicted_fertilidad),
         "cultivo": predicted_cultivo
     }
+    
+    # Verificar el contenido antes de la inserción
+    st.write("Nuevo registro a insertar:", new_record)
+    
     response = supabase.table(TABLE_NAME).insert(new_record).execute()
     
     if response.data:
