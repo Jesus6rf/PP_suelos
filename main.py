@@ -37,7 +37,7 @@ except Exception as e:
 st.title("Gestión de Registros de Suelos")
 
 # 📌 Crear Pestañas
-menu = st.sidebar.radio("Selecciona una opción", ["Agregar Registro", "Editar Registro", "Eliminar Registro"])
+menu = st.sidebar.radio("Selecciona una opción", ["Agregar Registro", "Actualizar Registro", "Eliminar Registro"])
 
 if menu == "Agregar Registro":
     st.subheader("📌 Agregar un Nuevo Registro")
@@ -78,9 +78,7 @@ if menu == "Agregar Registro":
             "potasio": float(potasio),
             "humedad": float(humedad),
             "densidad": float(densidad),
-            "altitud": float(altitud),
-            "fertilidad": fertilidad_pred,
-            "cultivo": cultivo_pred
+            "altitud": float(altitud)
         }
         try:
             response = supabase.table(TABLE_NAME).insert(new_record).execute()
@@ -91,22 +89,26 @@ if menu == "Agregar Registro":
         except Exception as e:
             st.error(f"Error en la inserción a Supabase: {e}")
 
-elif menu == "Editar Registro":
-    st.subheader("✏️ Editar Registro")
+elif menu == "Actualizar Registro":
+    st.subheader("🔄 Actualizar Registro")
     registros = supabase.table(TABLE_NAME).select("*").execute()
     if registros.data:
-        registro_id = st.selectbox("Selecciona un registro para editar", [r["id"] for r in registros.data])
+        registro_id = st.selectbox("Selecciona un registro para actualizar", [r["id"] for r in registros.data])
         datos = next(r for r in registros.data if r["id"] == registro_id)
         
-        for key in datos.keys():
-            if key not in ["id", "fecha_registro"]:
-                datos[key] = st.number_input(f"{key}", value=datos[key])
+        input_data = {key: st.number_input(f"{key}", value=datos[key]) for key in ["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud"]}
         
         if st.button("Predecir y Actualizar Registro"):
-            supabase.table(TABLE_NAME).update(datos).eq("id", registro_id).execute()
+            input_df = pd.DataFrame([list(input_data.values())], columns=input_data.keys())
+            fertilidad_pred = int(fertilidad_model.predict(input_df)[0])
+            cultivo_pred = "Maíz" if fertilidad_pred == 1 else "Ninguno"
+            input_data.update({"fertilidad": fertilidad_pred, "cultivo": cultivo_pred})
+            
+            supabase.table(TABLE_NAME).update(input_data).eq("id", registro_id).execute()
             st.success("Registro actualizado correctamente.")
     else:
         st.write("No hay registros disponibles.")
+
 
 elif menu == "Eliminar Registro":
     st.subheader("🗑️ Eliminar Registro")
