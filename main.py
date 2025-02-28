@@ -62,29 +62,21 @@ if st.button("Registrar y Predecir"):
     
     # Hacer predicción de fertilidad
     try:
-        st.write('Valores de entrada para predicción:', input_data)
         predicted_fertilidad = int(fertilidad_model.predict(input_data)[0])
-        st.write(f'Predicción de fertilidad (cruda): {predicted_fertilidad}')
-        predicted_fertilidad_text = "Fértil" if predicted_fertilidad == 1 else "Infértil"
     except Exception as e:
         st.error(f"Error en la predicción de fertilidad: {e}")
         st.stop()
     
-    # Si el suelo es fértil, hacer predicción de cultivo
-    predicted_cultivo = "Ninguno"
-    if predicted_fertilidad == 1:
-        try:
-            predicted_cultivo_encoded = int(cultivo_model.predict(input_data)[0])
-            cultivos = ["Trigo", "Maíz", "Caña de Azúcar", "Algodón", "Arroz", "Papa", "Cebolla", "Tomate", "Batata", "Brócoli", "Café"]
-            predicted_cultivo = cultivos[predicted_cultivo_encoded] if predicted_cultivo_encoded < len(cultivos) else "Desconocido"
-        except Exception as e:
-            st.error(f"Error en la predicción de cultivo: {e}")
-            st.stop()
+    # Hacer predicción de cultivo
+    try:
+        predicted_cultivo_encoded = int(cultivo_model.predict(input_data)[0])
+    except Exception as e:
+        st.error(f"Error en la predicción de cultivo: {e}")
+        st.stop()
     
     # Mostrar predicciones antes de enviarlas a la base de datos
-    st.write(f"Fertilidad predicha: {predicted_fertilidad_text}")
-    if predicted_fertilidad == 1:
-        st.write(f"Cultivo predicho: {predicted_cultivo}")
+    st.write(f"Fertilidad predicha: {predicted_fertilidad}")
+    st.write(f"Cultivo predicho: {predicted_cultivo_encoded}")
     
     # Generar valores de id y fecha_registro
     record_id = str(uuid.uuid4())
@@ -105,7 +97,7 @@ if st.button("Registrar y Predecir"):
         "densidad": float(densidad),
         "altitud": float(altitud),
         "fertilidad": predicted_fertilidad,
-        "cultivo": predicted_cultivo
+        "cultivo": predicted_cultivo_encoded
     }
     
     try:
