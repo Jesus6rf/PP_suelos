@@ -71,7 +71,10 @@ elif menu == "Agregar Registro":
         except Exception as e:
             st.error(f"Error en la predicción: {e}")
     
-    if st.button("Registrar Nuevo Suelo"): 
+    if st.button("Registrar Nuevo Suelo"):
+        if 'fertilidad_pred' not in locals():
+            st.error("⚠️ Primero debes predecir la fertilidad y el cultivo antes de registrar.")
+            st.stop() 
         fecha_registro = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         new_record = {
             "fecha_registro": fecha_registro,
