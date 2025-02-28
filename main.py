@@ -99,6 +99,10 @@ elif menu == "Editar Registro":
         if st.button("Cargar Datos"):
             datos = next(r for r in registros.data if r["id"] == registro_id)
             st.write(datos)
+            
+            if st.button("Actualizar Registro"):
+                supabase.table(TABLE_NAME).update(datos).eq("id", registro_id).execute()
+                st.success("Registro actualizado correctamente.")
     else:
         st.write("No hay registros disponibles.")
 
