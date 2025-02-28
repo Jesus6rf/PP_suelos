@@ -96,13 +96,15 @@ elif menu == "Editar Registro":
     registros = supabase.table(TABLE_NAME).select("*").execute()
     if registros.data:
         registro_id = st.selectbox("Selecciona un registro para editar", [r["id"] for r in registros.data])
-        if st.button("Cargar Datos"):
-            datos = next(r for r in registros.data if r["id"] == registro_id)
-            st.write(datos)
-            
-            if st.button("Actualizar Registro"):
-                supabase.table(TABLE_NAME).update(datos).eq("id", registro_id).execute()
-                st.success("Registro actualizado correctamente.")
+        datos = next(r for r in registros.data if r["id"] == registro_id)
+        
+        for key in datos.keys():
+            if key not in ["id", "fecha_registro"]:
+                datos[key] = st.number_input(f"{key}", value=datos[key])
+        
+        if st.button("Predecir y Actualizar Registro"):
+            supabase.table(TABLE_NAME).update(datos).eq("id", registro_id).execute()
+            st.success("Registro actualizado correctamente.")
     else:
         st.write("No hay registros disponibles.")
 
