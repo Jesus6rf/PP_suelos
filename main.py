@@ -62,7 +62,9 @@ if st.button("Registrar y Predecir"):
     
     # Hacer predicción de fertilidad
     try:
+        st.write('Valores de entrada para predicción:', input_data)
         predicted_fertilidad = int(fertilidad_model.predict(input_data)[0])
+        st.write(f'Predicción de fertilidad (cruda): {predicted_fertilidad}')
         predicted_fertilidad_text = "Fértil" if predicted_fertilidad == 1 else "Infértil"
     except Exception as e:
         st.error(f"Error en la predicción de fertilidad: {e}")
