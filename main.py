@@ -83,7 +83,7 @@ with tabs[0]:
         except Exception as e:
             st.error(f"Error: {e}")
 # ------------------------ PESTAÑA 2: ACTUALIZAR REGISTRO ------------------------
-with tabs[2]:
+with tabs[1]:
     st.title("Actualizar Registros")
 
     id_registro = st.number_input("ID del registro", min_value=1, step=1)
