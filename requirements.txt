@@ -1,0 +1,4 @@
+supabase
+requests
+pickle5
+pandas
