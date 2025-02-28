@@ -4,6 +4,7 @@ import supabase
 import xgboost as xgb
 import numpy as np
 import tempfile
+import os
 from io import StringIO
 
 # Configuración de Supabase
@@ -17,13 +18,16 @@ def load_model():
     response = supabase_client.storage.from_("modelos").download("xgboost_multioutput.json")
     
     # Guardar el modelo en un archivo temporal
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as temp_file:
+    temp_path = os.path.join(tempfile.gettempdir(), "xgboost_model.json")
+    with open(temp_path, "wb") as temp_file:
         temp_file.write(response)
-        temp_path = temp_file.name  # Obtener la ruta del archivo
     
     # Cargar el modelo desde el archivo temporal
     model = xgb.Booster()
-    model.load_model(temp_path)
+    try:
+        model.load_model(temp_path)
+    except xgb.core.XGBoostError as e:
+        raise RuntimeError(f"Error al cargar el modelo: {str(e)}")
     
     return model
 
