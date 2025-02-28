@@ -4,6 +4,8 @@ import streamlit as st
 from supabase import create_client
 import io
 import json
+import datetime
+import uuid
 
 # Configuración de Supabase
 SUPABASE_URL = "https://kuztdsenxrumlvwygzdn.supabase.co"
@@ -35,8 +37,22 @@ densidad = st.number_input("Densidad", min_value=0.0, step=0.1)
 altitud = st.number_input("Altitud", min_value=0.0, step=0.1)
 
 if st.button("Registrar y Predecir"):
-    # Insertar nuevo registro en Supabase
+    # Crear dataframe temporal para predicción
+    input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, fosforo, potasio, humedad, densidad, altitud]],
+                               columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud"])
+    
+    # Hacer predicción
+    prediction = model.predict(input_data)
+    predicted_fertilidad, predicted_cultivo = int(prediction[0, 0]), str(prediction[0, 1])
+    
+    # Generar valores de id y fecha_registro
+    record_id = str(uuid.uuid4())
+    fecha_registro = datetime.datetime.utcnow().isoformat()
+    
+    # Insertar nuevo registro en Supabase con predicciones
     new_record = {
+        "id": record_id,
+        "fecha_registro": fecha_registro,
         "tipo_suelo": tipo_suelo,
         "pH": pH,
         "materia_organica": materia_organica,
@@ -46,21 +62,16 @@ if st.button("Registrar y Predecir"):
         "potasio": potasio,
         "humedad": humedad,
         "densidad": densidad,
-        "altitud": altitud
+        "altitud": altitud,
+        "fertilidad": predicted_fertilidad,
+        "cultivo": predicted_cultivo
     }
     response = supabase.table(TABLE_NAME).insert(new_record).execute()
-    st.success("Registro guardado en la base de datos.")
     
-    # Obtener el ID del nuevo registro
-    data_response = supabase.table(TABLE_NAME).select("id, tipo_suelo, pH, materia_organica, conductividad, nitrogeno, fosforo, potasio, humedad, densidad, altitud").order("fecha_registro", desc=True).limit(1).execute()
-    data = pd.DataFrame(data_response.data)
-    
-    if not data.empty:
-        X = data[['tipo_suelo', 'pH', 'materia_organica', 'conductividad', 'nitrogeno', 'fosforo', 'potasio', 'humedad', 'densidad', 'altitud']]
-        prediction = model.predict(X)
-        predicted_fertilidad, predicted_cultivo = prediction[:, 0], prediction[:, 1]
-        
-        # Actualizar la tabla con las predicciones
-        supabase.table(TABLE_NAME).update({"fertilidad": int(predicted_fertilidad[0]), "cultivo": str(predicted_cultivo[0])}).eq("id", data["id"].iloc[0]).execute()
-        st.success(f"Predicción de fertilidad almacenada: {int(predicted_fertilidad[0])}")
-        st.success(f"Predicción de cultivo almacenada: {str(predicted_cultivo[0])}")
+    if response.data:
+        st.success("Registro y predicción guardados correctamente.")
+        st.success(f"Predicción de fertilidad: {predicted_fertilidad}")
+        st.success(f"Predicción de cultivo: {predicted_cultivo}")
+    else:
+        st.error("Error al guardar los datos en Supabase.")
+
