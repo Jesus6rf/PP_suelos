@@ -20,6 +20,13 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # Descargar modelo desde Supabase Storage con manejo de errores
 try:
     response = supabase.storage.from_(BUCKET_NAME).download(MODEL_FILE)
+    print(f"Tipo de response: {type(response)}")
+    st.write(f"Tipo de response: {type(response)}")
+    
+    if isinstance(response, dict):
+        st.error("Error: Supabase devolvió un diccionario en lugar del archivo del modelo. Verifica la ruta y permisos del archivo en Supabase.")
+        st.stop()
+    
     model_bytes = io.BytesIO(response)  # Convertir a objeto BytesIO
     model = pickle.load(model_bytes)  # Cargar modelo con pickle
     print(f"Modelo cargado exitosamente, tipo: {type(model)}")
