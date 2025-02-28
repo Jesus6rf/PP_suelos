@@ -55,32 +55,34 @@ altitud = st.number_input("Altitud", min_value=0.0, step=0.1)
 
 if st.button("Registrar y Predecir"):
     # Crear dataframe con todas las variables
-    input_data = pd.DataFrame([[float(tipo_suelo), float(pH), float(materia_organica), float(conductividad), float(nitrogeno), 
-                                float(fosforo), float(potasio), float(humedad), float(densidad), float(altitud)]],
+    input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, 
+                                fosforo, potasio, humedad, densidad, altitud]],
                                columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", 
                                         "fosforo", "potasio", "humedad", "densidad", "altitud"])
     
     # Hacer predicción de fertilidad
     try:
-        st.write('Valores de entrada para fertilidad:', input_data)
         predicted_fertilidad = int(fertilidad_model.predict(input_data)[0])
-        st.write(f'Predicción cruda de fertilidad: {predicted_fertilidad}')
+        predicted_fertilidad_text = "Fértil" if predicted_fertilidad == 1 else "Infértil"
     except Exception as e:
         st.error(f"Error en la predicción de fertilidad: {e}")
         st.stop()
     
-    # Hacer predicción de cultivo
-    try:
-        st.write('Valores de entrada para cultivo:', input_data)
-        predicted_cultivo_encoded = int(cultivo_model.predict(input_data)[0])
-        st.write(f'Predicción cruda de cultivo: {predicted_cultivo_encoded}')
-    except Exception as e:
-        st.error(f"Error en la predicción de cultivo: {e}")
-        st.stop()
+    # Si el suelo es fértil, hacer predicción de cultivo
+    predicted_cultivo = "Ninguno"
+    if predicted_fertilidad == 1:
+        try:
+            predicted_cultivo_encoded = int(cultivo_model.predict(input_data)[0])
+            cultivos = ["Trigo", "Maíz", "Caña de Azúcar", "Algodón", "Arroz", "Papa", "Cebolla", "Tomate", "Batata", "Brócoli", "Café"]
+            predicted_cultivo = cultivos[predicted_cultivo_encoded] if predicted_cultivo_encoded < len(cultivos) else "Desconocido"
+        except Exception as e:
+            st.error(f"Error en la predicción de cultivo: {e}")
+            st.stop()
     
     # Mostrar predicciones antes de enviarlas a la base de datos
-    st.write(f"Fertilidad predicha: {predicted_fertilidad}")
-    st.write(f"Cultivo predicho: {predicted_cultivo_encoded}")
+    st.write(f"Fertilidad predicha: {predicted_fertilidad_text}")
+    if predicted_fertilidad == 1:
+        st.write(f"Cultivo predicho: {predicted_cultivo}")
     
     # Generar valores de id y fecha_registro
     record_id = str(uuid.uuid4())
@@ -100,8 +102,8 @@ if st.button("Registrar y Predecir"):
         "humedad": float(humedad),
         "densidad": float(densidad),
         "altitud": float(altitud),
-        "fertilidad": predicted_fertilidad,
-        "cultivo": predicted_cultivo_encoded
+        "fertilidad": predicted_fertilidad_text,
+        "cultivo": predicted_cultivo
     }
     
     try:
