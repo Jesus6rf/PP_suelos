@@ -99,8 +99,9 @@ with tabs[1]:
                 
                 # Mostrar valores actuales y permitir cambios
                 tipo_suelo = st.selectbox("Tipo de suelo", [1, 2, 3, 4], 
-                                          index=[1, 2, 3, 4].index(record_data["tipo_suelo"]),
-                                          format_func=lambda x: {1: 'Arcilloso', 2: 'Arenoso', 3: 'Limoso', 4: 'Franco'}.get(x, 'Desconocido'))
+                          index=[1, 2, 3, 4].index(record_data["tipo_suelo"]),
+                          format_func=lambda x: {1: 'Arcilloso', 2: 'Arenoso', 3: 'Limoso', 4: 'Franco'}.get(x, 'Desconocido'),
+                          key="tipo_suelo_actualizar")  # Se agrega un key único
                 pH = st.number_input("pH del suelo", min_value=0.0, max_value=14.0, step=0.1, value=float(record_data["pH"]))
                 materia_organica = st.number_input("Materia orgánica", min_value=0.0, max_value=10.0, step=0.1, value=float(record_data["materia_organica"]))
                 conductividad = st.number_input("Conductividad eléctrica", min_value=0.0, max_value=5.0, step=0.1, value=float(record_data["conductividad"]))
