@@ -102,7 +102,7 @@ if st.button("Registrar y Predecir"):
         "humedad": float(humedad),
         "densidad": float(densidad),
         "altitud": float(altitud),
-        "fertilidad": predicted_fertilidad_text,
+        "fertilidad": predicted_fertilidad,
         "cultivo": predicted_cultivo
     }
     
