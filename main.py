@@ -27,6 +27,8 @@ try:
     fertilidad_model = model_dict["fertilidad_model"]
     cultivo_model = model_dict["cultivo_model"]
     label_encoder = model_dict["label_encoder"]
+    feature_columns_fert = model_dict["feature_columns_fert"]
+    feature_columns_cult = model_dict["feature_columns_cult"]
     
     print("Modelos cargados exitosamente")
     st.write("Modelos cargados exitosamente")
@@ -49,12 +51,12 @@ densidad = st.number_input("Densidad", min_value=0.0, step=0.1)
 altitud = st.number_input("Altitud", min_value=0.0, step=0.1)
 
 if st.button("Registrar y Predecir"):
-    # Crear dataframe con todas las variables, incluyendo cultivo_encoded
+    # Crear dataframe con todas las variables
     input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, fosforo, potasio, humedad, densidad, altitud, 0]],
-                               columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud", "cultivo_encoded"])
+                               columns=feature_columns_cult)
     
     # Separar datos para fertilidad (sin cultivo_encoded)
-    input_data_fertilidad = input_data.drop(columns=["cultivo_encoded"])
+    input_data_fertilidad = input_data[feature_columns_fert]
     
     # Hacer predicción de fertilidad
     try:
