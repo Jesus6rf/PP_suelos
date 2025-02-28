@@ -1,6 +1,6 @@
 streamlit
 pandas
 numpy
-xgboost
 supabase
-pickle
+pickle5
+xgboost
