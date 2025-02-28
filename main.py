@@ -89,16 +89,9 @@ with tabs[2]:
             record = supabase.table(TABLE_NAME).select("*").eq("id", id_registro).execute()
             if record.data:
                 record = record.data[0]
-                pH = st.number_input("pH del suelo", value=record["pH"], min_value=0.0, max_value=14.0, step=0.1)
-                humedad = st.number_input("Humedad", value=record["humedad"], min_value=0.0, step=0.1)
+                pH = st.number_input("pH del suelo", value=float(record["pH"]), min_value=0.0, max_value=14.0, step=0.1)
+                humedad = st.number_input("Humedad", value=float(record["humedad"]), min_value=0.0, step=0.1)
             else:
                 st.warning("Registro no encontrado.")
         except Exception as e:
             st.error(f"Error al cargar el registro: {e}")
-
-    if st.button("Actualizar y Predecir"):
-        try:
-            supabase.table(TABLE_NAME).update({"pH": pH, "humedad": humedad}).eq("id", id_registro).execute()
-            st.success("Registro actualizado y predicción realizada.")
-        except Exception as e:
-            st.error(f"Error al actualizar el registro: {e}")
