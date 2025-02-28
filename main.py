@@ -98,9 +98,14 @@ if st.button("Registrar y Predecir"):
     # Verificar el contenido antes de la inserción
     st.write("Nuevo registro a insertar:", new_record)
     
-    response = supabase.table(TABLE_NAME).insert(new_record).execute()
+    try:
+        response = supabase.table(TABLE_NAME).insert(new_record).execute()
+        st.write("Respuesta de Supabase:", response)
+    except Exception as e:
+        st.error(f"Error en la inserción a Supabase: {e}")
+        st.stop()
     
-    if response.data:
+    if response and response.data:
         st.success("Registro y predicción guardados correctamente.")
         st.success(f"Predicción de fertilidad: {predicted_fertilidad}")
         st.success(f"Predicción de cultivo: {predicted_cultivo}")
