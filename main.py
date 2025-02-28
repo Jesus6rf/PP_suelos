@@ -35,9 +35,9 @@ except Exception as e:
     st.stop()
 
 # Interfaz con pestañas
-tabs = st.tabs(["Registrar & Predecir", "Visualizar y Administrar Registros"])
+tabs = st.tabs(["Registrar & Predecir", "Actualizar Registro", "Visualizar & Eliminar"])
 
-# Pestaña de Registro y Predicción
+# ------------------------ PESTAÑA 1: REGISTRAR Y PREDECIR ------------------------
 with tabs[0]:
     st.title("Registrar y Predecir")
     
@@ -83,12 +83,31 @@ with tabs[0]:
         except Exception as e:
             st.error(f"Error: {e}")
 
-# Pestaña de Visualización y Administración
+# ------------------------ PESTAÑA 2: ACTUALIZAR REGISTRO ------------------------
 with tabs[1]:
-    st.title("Visualizar y Administrar Registros")
+    st.title("Actualizar Registro")
+    record_id = st.number_input("ID del registro a actualizar", min_value=1, step=1)
+    new_fertilidad = st.selectbox("Nuevo estado de fertilidad", ["Fértil", "Infértil"])
+    
+    if st.button("Actualizar"):
+        try:
+            update_data = {"fertilidad": 1 if new_fertilidad == "Fértil" else 0}
+            supabase.table(TABLE_NAME).update(update_data).eq("id", record_id).execute()
+            st.success(f"Registro con ID {record_id} actualizado correctamente.")
+        except Exception as e:
+            st.error(f"Error: {e}")
+
+# ------------------------ PESTAÑA 3: VISUALIZAR Y ELIMINAR ------------------------
+with tabs[2]:
+    st.title("Visualizar y Eliminar Registros")
     try:
         data = supabase.table(TABLE_NAME).select("*").execute()
         df = pd.DataFrame(data.data)
         st.dataframe(df)
+        
+        delete_id = st.number_input("ID del registro a eliminar", min_value=1, step=1)
+        if st.button("Eliminar"):
+            supabase.table(TABLE_NAME).delete().eq("id", delete_id).execute()
+            st.success(f"Registro con ID {delete_id} eliminado correctamente.")
     except Exception as e:
         st.error(f"Error al cargar los datos: {e}")
