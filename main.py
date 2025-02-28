@@ -37,6 +37,19 @@ except Exception as e:
 # Interfaz con pestañas
 tabs = st.tabs(["Registrar & Predecir", "Visualizar Datos", "Actualizar & Eliminar"])
 
+with tabs[0]:
+    st.title("Registrar & Predecir")
+    st.write("Formulario de registro y predicción en construcción.")
+
+with tabs[1]:
+    st.title("Visualizar Datos")
+    try:
+        data = supabase.table(TABLE_NAME).select("*").execute()
+        df = pd.DataFrame(data.data)
+        st.dataframe(df)
+    except Exception as e:
+        st.error(f"Error al cargar los datos: {e}")
+
 with tabs[2]:
     st.title("Actualizar y Eliminar Registros")
     id_registro = st.number_input("ID del registro", min_value=1, step=1)
@@ -77,23 +90,17 @@ with tabs[2]:
                                                 "fosforo", "potasio", "humedad", "densidad", "altitud"])
             try:
                 predicted_fertilidad = int(fertilidad_model.predict(input_data)[0])
-                predicted_fertilidad_text = "Fértil" if predicted_fertilidad == 1 else "Infértil"
                 predicted_cultivo = "Ninguno"
                 if predicted_fertilidad == 1:
                     predicted_cultivo_encoded = int(cultivo_model.predict(input_data)[0])
                     cultivos = ["Trigo", "Maíz", "Caña de Azúcar", "Algodón", "Arroz", "Papa", "Cebolla", "Tomate", "Batata", "Brócoli", "Café"]
                     predicted_cultivo = cultivos[predicted_cultivo_encoded] if predicted_cultivo_encoded < len(cultivos) else "Desconocido"
                 
-                st.write(f"Fertilidad predicha: {predicted_fertilidad_text}")
-                if predicted_fertilidad == 1:
-                    st.write(f"Cultivo predicho: {predicted_cultivo}")
-                
                 update_record = {
                     "tipo_suelo": int(tipo_suelo), "pH": float(pH), "materia_organica": float(materia_organica),
                     "conductividad": float(conductividad), "nitrogeno": float(nitrogeno), "fosforo": float(fosforo),
                     "potasio": float(potasio), "humedad": float(humedad), "densidad": float(densidad), "altitud": float(altitud),
-                    "fertilidad": predicted_fertilidad, "cultivo": predicted_cultivo,
-                    "fecha_actualizacion": datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+                    "fertilidad": predicted_fertilidad, "cultivo": predicted_cultivo
                 }
                 supabase.table(TABLE_NAME).update(update_record).eq("id", id_registro).execute()
                 st.success("Registro actualizado y predicción guardada correctamente.")
