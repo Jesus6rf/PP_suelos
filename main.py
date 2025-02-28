@@ -96,13 +96,14 @@ elif menu == "Actualizar Registro":
         registro_id = st.selectbox("Selecciona un registro para actualizar", [r["id"] for r in registros.data])
         datos = next(r for r in registros.data if r["id"] == registro_id)
         
-        input_data = {key: st.number_input(f"{key}", value=datos[key]) for key in ["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud"]}
+        tipo_suelo = st.selectbox("Tipo de suelo", options=[1, 2, 3, 4], index=datos["tipo_suelo"]-1, format_func=lambda x: {1: 'Arcilloso', 2: 'Arenoso', 3: 'Limoso', 4: 'Franco'}.get(x, 'Desconocido'))
+        input_data = {key: st.number_input(f"{key}", value=datos[key]) for key in ["pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud"]}
         
         if st.button("Predecir y Actualizar Registro"):
-            input_df = pd.DataFrame([list(input_data.values())], columns=input_data.keys())
+            input_df = pd.DataFrame([[tipo_suelo] + list(input_data.values())], columns=["tipo_suelo"] + list(input_data.keys()))
             fertilidad_pred = int(fertilidad_model.predict(input_df)[0])
             cultivo_pred = "Maíz" if fertilidad_pred == 1 else "Ninguno"
-            input_data.update({"fertilidad": fertilidad_pred, "cultivo": cultivo_pred})
+            input_data.update({"tipo_suelo": tipo_suelo, "fertilidad": fertilidad_pred, "cultivo": cultivo_pred})
             
             supabase.table(TABLE_NAME).update(input_data).eq("id", registro_id).execute()
             st.success("Registro actualizado correctamente.")
