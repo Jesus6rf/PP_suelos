@@ -53,7 +53,7 @@ if st.button("Registrar y Predecir"):
     input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, fosforo, potasio, humedad, densidad, altitud]],
                                columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud"])
     
-    # Asegurar que los nombres de columnas coincidan con el entrenamiento
+    # Asegurar que solo se usen las columnas esperadas
     expected_columns = ["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud"]
     input_data = input_data[expected_columns]
     
