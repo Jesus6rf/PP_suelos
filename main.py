@@ -22,7 +22,8 @@ try:
     response = supabase.storage.from_(BUCKET_NAME).download(MODEL_FILE)
     model_bytes = io.BytesIO(response)  # Convertir a objeto BytesIO
     model = pickle.load(model_bytes)  # Cargar modelo con pickle
-    print("Modelo cargado exitosamente")
+    print(f"Modelo cargado exitosamente, tipo: {type(model)}")
+    st.write(f"Modelo cargado exitosamente, tipo: {type(model)}")
 except Exception as e:
     st.error(f"Error al cargar el modelo: {e}")
     st.stop()
@@ -48,6 +49,7 @@ if st.button("Registrar y Predecir"):
     
     # Hacer predicción
     try:
+        st.write(f"Tipo de modelo antes de predecir: {type(model)}")
         prediction = model.predict(input_data)
         predicted_fertilidad, predicted_cultivo = int(prediction[0, 0]), str(prediction[0, 1])
     except Exception as e:
