@@ -49,7 +49,7 @@ densidad = st.number_input("Densidad", min_value=0.0, step=0.1)
 altitud = st.number_input("Altitud", min_value=0.0, step=0.1)
 
 if st.button("Registrar y Predecir"):
-    # Crear dataframe temporal para predicción de fertilidad
+    # Crear dataframe temporal para predicción de fertilidad (sin cultivo_encoded)
     input_data_fertilidad = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, fosforo, potasio, humedad, densidad, altitud]],
                                          columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud"])
     
@@ -57,9 +57,15 @@ if st.button("Registrar y Predecir"):
     try:
         predicted_fertilidad = int(fertilidad_model.predict(input_data_fertilidad)[0])  # Predicción binaria
         
-        # Agregar la columna cultivo_encoded con un valor dummy antes de predecir el cultivo
+        # Crear datos para predicción de cultivo (agregando cultivo_encoded)
         input_data_cultivo = input_data_fertilidad.copy()
-        input_data_cultivo["cultivo_encoded"] = 0
+        input_data_cultivo["cultivo_encoded"] = 0  # Se asigna un valor dummy
+        
+        # Reordenar columnas para que coincidan con las usadas en entrenamiento
+        expected_columns_cultivo = ["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud", "cultivo_encoded"]
+        input_data_cultivo = input_data_cultivo[expected_columns_cultivo]
+        
+        # Predecir cultivo
         predicted_cultivo_encoded = int(cultivo_model.predict(input_data_cultivo)[0])  # Predicción de cultivo
         predicted_cultivo = label_encoder.inverse_transform([predicted_cultivo_encoded])[0]  # Convertir a texto
     except Exception as e:
