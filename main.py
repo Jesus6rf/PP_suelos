@@ -53,26 +53,19 @@ if menu == "Agregar Registro":
     altitud = st.number_input("Altitud", min_value=0.0, step=0.1)
     
     if st.button("Predecir Fertilidad y Cultivo"):
-        if 'fertilidad_pred' not in st.session_state:
-            st.session_state.fertilidad_pred = None
-        if 'cultivo_pred' not in st.session_state:
-            st.session_state.cultivo_pred = None
         try:
             input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, fosforo, potasio, humedad, densidad, altitud]],
                                       columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fosforo", "potasio", "humedad", "densidad", "altitud"])
-            st.session_state.fertilidad_pred = int(fertilidad_model.predict(input_data)[0])
-            st.session_state.cultivo_pred = "Maíz" if st.session_state.fertilidad_pred == 1 else "Ninguno"
+            fertilidad_pred = int(fertilidad_model.predict(input_data)[0])
+            cultivo_pred = "Maíz" if fertilidad_pred == 1 else "Ninguno"
             
-            st.write(f"Fertilidad predicha: {'Fértil' if st.session_state.fertilidad_pred == 1 else 'Infértil'}")
-            if st.session_state.fertilidad_pred == 1:
-                st.write(f"Cultivo recomendado: {st.session_state.cultivo_pred}")
+            st.write(f"Fertilidad predicha: {'Fértil' if fertilidad_pred == 1 else 'Infértil'}")
+            if fertilidad_pred == 1:
+                st.write(f"Cultivo recomendado: {cultivo_pred}")
         except Exception as e:
             st.error(f"Error en la predicción: {e}")
     
     if st.button("Registrar Nuevo Suelo"):
-        if 'fertilidad_pred' not in st.session_state or st.session_state.fertilidad_pred is None:
-            st.error("⚠️ Primero debes predecir la fertilidad y el cultivo antes de registrar.")
-            st.stop() 
         fecha_registro = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         new_record = {
             "fecha_registro": fecha_registro,
@@ -86,8 +79,8 @@ if menu == "Agregar Registro":
             "humedad": float(humedad),
             "densidad": float(densidad),
             "altitud": float(altitud),
-            "fertilidad": st.session_state.fertilidad_pred,
-            "cultivo": st.session_state.cultivo_pred
+            "fertilidad": fertilidad_pred,
+            "cultivo": cultivo_pred
         }
         try:
             response = supabase.table(TABLE_NAME).insert(new_record).execute()
@@ -97,3 +90,11 @@ if menu == "Agregar Registro":
                 st.error("Error: No se pudo insertar el registro. Verifica los datos.")
         except Exception as e:
             st.error(f"Error en la inserción a Supabase: {e}")
+
+elif menu == "Editar Registro":
+    st.subheader("✏️ Editar Registro")
+    st.write("Funcionalidad en desarrollo...")
+
+elif menu == "Eliminar Registro":
+    st.subheader("🗑️ Eliminar Registro")
+    st.write("Funcionalidad en desarrollo...")
