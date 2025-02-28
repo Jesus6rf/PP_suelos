@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import supabase
-import pickle
+import xgboost as xgb
 import numpy as np
 from io import StringIO
 
@@ -13,8 +13,9 @@ supabase_client = supabase.create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Cargar modelo desde Supabase Storage
 def load_model():
-    response = supabase_client.storage.from_("modelos").download("xgboost_multioutput.pkl")
-    model = pickle.loads(response)
+    response = supabase_client.storage.from_("modelos").download("xgboost_multioutput.json")
+    model = xgb.Booster()
+    model.load_model(response)
     return model
 
 model = load_model()
@@ -32,7 +33,8 @@ def insert_record(data):
 # Función de predicción
 def predict(data):
     input_data = np.array(data).reshape(1, -1)
-    prediction = model.predict(input_data)
+    dmatrix = xgb.DMatrix(input_data)
+    prediction = model.predict(dmatrix)
     return prediction[0]
 
 # Interfaz Streamlit
