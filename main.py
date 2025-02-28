@@ -20,17 +20,16 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # Descargar modelo desde Supabase Storage con manejo de errores
 try:
     response = supabase.storage.from_(BUCKET_NAME).download(MODEL_FILE)
-    print(f"Tipo de response: {type(response)}")
-    st.write(f"Tipo de response: {type(response)}")
-    
-    if isinstance(response, dict):
-        st.error("Error: Supabase devolvió un diccionario en lugar del archivo del modelo. Verifica la ruta y permisos del archivo en Supabase.")
-        st.stop()
-    
     model_bytes = io.BytesIO(response)  # Convertir a objeto BytesIO
-    model = pickle.load(model_bytes)  # Cargar modelo con pickle
-    print(f"Modelo cargado exitosamente, tipo: {type(model)}")
-    st.write(f"Modelo cargado exitosamente, tipo: {type(model)}")
+    model_dict = pickle.load(model_bytes)  # Cargar el diccionario con los modelos
+    
+    # Extraer los modelos y el label encoder
+    fertilidad_model = model_dict["fertilidad_model"]
+    cultivo_model = model_dict["cultivo_model"]
+    label_encoder = model_dict["label_encoder"]
+    
+    print("Modelos cargados exitosamente")
+    st.write("Modelos cargados exitosamente")
 except Exception as e:
     st.error(f"Error al cargar el modelo: {e}")
     st.stop()
@@ -54,11 +53,11 @@ if st.button("Registrar y Predecir"):
     input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, fósforo, potasio, humedad, densidad, altitud]],
                                columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", "fósforo", "potasio", "humedad", "densidad", "altitud"])
     
-    # Hacer predicción
+    # Hacer predicción con ambos modelos
     try:
-        st.write(f"Tipo de modelo antes de predecir: {type(model)}")
-        prediction = model.predict(input_data)
-        predicted_fertilidad, predicted_cultivo = int(prediction[0, 0]), str(prediction[0, 1])
+        predicted_fertilidad = fertilidad_model.predict(input_data)[0]  # Predicción binaria
+        predicted_cultivo_encoded = cultivo_model.predict(input_data)[0]  # Predicción de cultivo en código numérico
+        predicted_cultivo = label_encoder.inverse_transform([predicted_cultivo_encoded])[0]  # Convertir a texto
     except Exception as e:
         st.error(f"Error en la predicción: {e}")
         st.stop()
@@ -81,7 +80,7 @@ if st.button("Registrar y Predecir"):
         "humedad": humedad,
         "densidad": densidad,
         "altitud": altitud,
-        "fertilidad": predicted_fertilidad,
+        "fertilidad": int(predicted_fertilidad),
         "cultivo": predicted_cultivo
     }
     response = supabase.table(TABLE_NAME).insert(new_record).execute()
