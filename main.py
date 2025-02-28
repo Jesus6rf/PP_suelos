@@ -42,7 +42,7 @@ except Exception as e:
 st.title("Registro y Predicción de Suelos")
 
 # Formulario para ingreso de datos
-tipo_suelo = st.number_input("Tipo de suelo", min_value=0, step=1)
+tipo_suelo = st.selectbox("Tipo de suelo", options=[1, 2, 3, 4], format_func=lambda x: {1: 'Arcilloso', 2: 'Arenoso', 3: 'Limoso', 4: 'Franco'}.get(x, 'Desconocido'))
 pH = st.number_input("pH del suelo", min_value=0.0, step=0.1)
 materia_organica = st.number_input("Materia orgánica", min_value=0.0, step=0.1)
 conductividad = st.number_input("Conductividad eléctrica", min_value=0.0, step=0.1)
@@ -85,8 +85,10 @@ if st.button("Registrar y Predecir"):
         st.write(f"Cultivo predicho: {predicted_cultivo}")
     
     # Generar valores de id y fecha_registro
-    record_id = str(uuid.uuid4())
-    fecha_registro = datetime.datetime.utcnow().isoformat()
+    record_id = supabase.table(TABLE_NAME).select("id").order("id", desc=True).limit(1).execute()
+    last_id = record_id.data[0]["id"] if record_id.data else 0
+    record_id = last_id + 1
+    fecha_registro = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     
     # Insertar nuevo registro en Supabase con predicciones
     new_record = {
