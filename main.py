@@ -37,64 +37,47 @@ except Exception as e:
 # Interfaz con pestañas
 tabs = st.tabs(["Registrar & Predecir", "Visualizar Datos", "Actualizar & Eliminar"])
 
-with tabs[2]:
-    st.title("Actualizar y Eliminar Registros")
-    id_registro = st.number_input("ID del registro", min_value=1, step=1)
+with tabs[0]:
+    st.title("Registrar y Predecir")
     
-    if "record_data" not in st.session_state:
-        st.session_state.record_data = None
+    tipo_suelo = st.selectbox("Tipo de suelo", options=[1, 2, 3, 4], 
+                             format_func=lambda x: {1: 'Arcilloso', 2: 'Arenoso', 3: 'Limoso', 4: 'Franco'}.get(x, 'Desconocido'))
+    pH = st.number_input("pH del suelo", min_value=0.0, max_value=14.0, step=0.1)
+    materia_organica = st.number_input("Materia orgánica", min_value=0.0, max_value=10.0, step=0.1)
+    conductividad = st.number_input("Conductividad eléctrica", min_value=0.0, max_value=5.0, step=0.1)
+    nitrogeno = st.number_input("Nivel de Nitrógeno", min_value=0.0, max_value=5.0, step=0.1)
+    fosforo = st.number_input("Nivel de Fósforo", min_value=0.0, max_value=500.0, step=0.1)
+    potasio = st.number_input("Nivel de Potasio", min_value=0.0, step=0.1)
+    humedad = st.number_input("Humedad", min_value=0.0, step=0.1)
+    densidad = st.number_input("Densidad", min_value=0.0, step=0.1)
+    altitud = st.number_input("Altitud", min_value=0.0, step=0.1)
     
-    if st.button("Cargar Registro"):
+    if st.button("Registrar y Predecir"):
+        input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, 
+                                    fosforo, potasio, humedad, densidad, altitud]],
+                                   columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", 
+                                            "fosforo", "potasio", "humedad", "densidad", "altitud"])
         try:
-            record = supabase.table(TABLE_NAME).select("*").eq("id", id_registro).execute()
-            if record.data:
-                st.session_state.record_data = record.data[0]
-            else:
-                st.warning("Registro no encontrado.")
+            predicted_fertilidad = int(fertilidad_model.predict(input_data)[0])
+            predicted_fertilidad_text = "Fértil" if predicted_fertilidad == 1 else "Infértil"
+            predicted_cultivo = "Ninguno"
+            if predicted_fertilidad == 1:
+                predicted_cultivo_encoded = int(cultivo_model.predict(input_data)[0])
+                cultivos = ["Trigo", "Maíz", "Caña de Azúcar", "Algodón", "Arroz", "Papa", "Cebolla", "Tomate", "Batata", "Brócoli", "Café"]
+                predicted_cultivo = cultivos[predicted_cultivo_encoded] if predicted_cultivo_encoded < len(cultivos) else "Desconocido"
+            
+            st.write(f"**Fertilidad Predicha:** {predicted_fertilidad_text}")
+            if predicted_fertilidad == 1:
+                st.write(f"**Cultivo Predicho:** {predicted_cultivo}")
+            
+            new_record = {
+                "tipo_suelo": int(tipo_suelo), "pH": float(pH), "materia_organica": float(materia_organica), 
+                "conductividad": float(conductividad), "nitrogeno": float(nitrogeno), "fosforo": float(fosforo), 
+                "potasio": float(potasio), "humedad": float(humedad), "densidad": float(densidad), "altitud": float(altitud),
+                "fertilidad": predicted_fertilidad, "cultivo": predicted_cultivo,
+                "fecha_registro": datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            }
+            supabase.table(TABLE_NAME).insert(new_record).execute()
+            st.success("Registro y predicción guardados correctamente.")
         except Exception as e:
-            st.error(f"Error al cargar el registro: {e}")
-    
-    if st.session_state.record_data:
-        record = st.session_state.record_data
-        
-        tipo_suelo = st.selectbox("Tipo de suelo", options=[1, 2, 3, 4],
-                                 index=[1, 2, 3, 4].index(record["tipo_suelo"]),
-                                 format_func=lambda x: {1: 'Arcilloso', 2: 'Arenoso', 3: 'Limoso', 4: 'Franco'}.get(x, 'Desconocido'))
-        pH = st.number_input("pH del suelo", value=float(record["pH"]), min_value=0.0, max_value=14.0, step=0.1)
-        materia_organica = st.number_input("Materia orgánica", value=float(record["materia_organica"]), min_value=0.0, max_value=10.0, step=0.1)
-        conductividad = st.number_input("Conductividad eléctrica", value=float(record["conductividad"]), min_value=0.0, max_value=5.0, step=0.1)
-        nitrogeno = st.number_input("Nivel de Nitrógeno", value=float(record["nitrogeno"]), min_value=0.0, max_value=5.0, step=0.1)
-        fosforo = st.number_input("Nivel de Fósforo", value=float(record["fosforo"]), min_value=0.0, max_value=500.0, step=0.1)
-        potasio = st.number_input("Nivel de Potasio", value=float(record["potasio"]), min_value=0.0, step=0.1)
-        humedad = st.number_input("Humedad", value=float(record["humedad"]), min_value=0.0, step=0.1)
-        densidad = st.number_input("Densidad", value=float(record["densidad"]), min_value=0.0, step=0.1)
-        altitud = st.number_input("Altitud", value=float(record["altitud"]), min_value=0.0, step=0.1)
-        
-        if st.button("Actualizar y Predecir"):
-            input_data = pd.DataFrame([[tipo_suelo, pH, materia_organica, conductividad, nitrogeno, 
-                                        fosforo, potasio, humedad, densidad, altitud]],
-                                       columns=["tipo_suelo", "pH", "materia_organica", "conductividad", "nitrogeno", 
-                                                "fosforo", "potasio", "humedad", "densidad", "altitud"])
-            try:
-                predicted_fertilidad = int(fertilidad_model.predict(input_data)[0])
-                predicted_fertilidad_text = "Fértil" if predicted_fertilidad == 1 else "Infértil"
-                predicted_cultivo = "Ninguno"
-                if predicted_fertilidad == 1:
-                    predicted_cultivo_encoded = int(cultivo_model.predict(input_data)[0])
-                    cultivos = ["Trigo", "Maíz", "Caña de Azúcar", "Algodón", "Arroz", "Papa", "Cebolla", "Tomate", "Batata", "Brócoli", "Café"]
-                    predicted_cultivo = cultivos[predicted_cultivo_encoded] if predicted_cultivo_encoded < len(cultivos) else "Desconocido"
-                
-                st.write(f"**Fertilidad Predicha:** {predicted_fertilidad_text}")
-                if predicted_fertilidad == 1:
-                    st.write(f"**Cultivo Predicho:** {predicted_cultivo}")
-                
-                update_record = {
-                    "tipo_suelo": int(tipo_suelo), "pH": float(pH), "materia_organica": float(materia_organica),
-                    "conductividad": float(conductividad), "nitrogeno": float(nitrogeno), "fosforo": float(fosforo),
-                    "potasio": float(potasio), "humedad": float(humedad), "densidad": float(densidad), "altitud": float(altitud),
-                    "fertilidad": predicted_fertilidad, "cultivo": predicted_cultivo
-                }
-                supabase.table(TABLE_NAME).update(update_record).eq("id", id_registro).execute()
-                st.success("Registro actualizado y predicción guardada correctamente.")
-            except Exception as e:
-                st.error(f"Error: {e}")
+            st.error(f"Error: {e}")
