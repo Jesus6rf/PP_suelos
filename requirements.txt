@@ -1,3 +1,5 @@
-supabase-py
-requests
-pickle5
+streamlit
+pandas
+numpy
+xgboost
+supabase
