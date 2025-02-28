@@ -74,4 +74,3 @@ if st.button("Registrar y Predecir"):
         st.success(f"Predicción de cultivo: {predicted_cultivo}")
     else:
         st.error("Error al guardar los datos en Supabase.")
-
