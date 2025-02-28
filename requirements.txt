@@ -1,7 +1,4 @@
 streamlit
-supabase
-scikit-learn
-pandas
-numpy
-matplotlib
-seaborn
+supabase-py
+requests
+pickle5
