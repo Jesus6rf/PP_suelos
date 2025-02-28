@@ -86,7 +86,15 @@ elif menu == "Agregar Registro":
             "densidad": float(densidad),
             "altitud": float(altitud)
         }
-        supabase.table(TABLE_NAME).insert(new_record).execute()
+        try:
+            response = supabase.table(TABLE_NAME).insert(new_record).execute()
+            if response and response.data:
+                st.success("Registro agregado correctamente.")
+                st.experimental_rerun()
+            else:
+                st.error("Error: No se pudo insertar el registro. Verifica los datos.")
+        except Exception as e:
+            st.error(f"Error en la inserción a Supabase: {e}")
         st.success("Registro agregado correctamente.")
         st.experimental_rerun()
 
