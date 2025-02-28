@@ -1,4 +1,7 @@
+streamlit
 supabase
-requests
-pickle5
+scikit-learn
 pandas
+numpy
+matplotlib
+seaborn
