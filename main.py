@@ -7,7 +7,7 @@ import xgboost as xgb
 # Configuración de Supabase
 SUPABASE_URL = "https://kuztdsenxrumlvwygzdn.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1enRkc2VueHJ1bWx2d3lnemRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2OTI0NjksImV4cCI6MjA1NjI2ODQ2OX0.PhGg9A5k-UUoIc83LhLdETIl1WbUErRMBnzQwkRjlPc"
-TABLE_NAME = "suelo_registros"
+TABLE_NAME = "suelo_registros_v2"
 
 # Crear cliente Supabase
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -31,7 +31,7 @@ if menu == "Ver Registros":
     else:
         st.write("No hay registros disponibles.")
 
-elif menu == "Agregar Registro":
+elif menu == "Agregar Registro" or menu == "Predecir Suelo":
     st.subheader("📌 Agregar un Nuevo Registro")
     tipo_suelo = st.selectbox("Tipo de suelo", options=[1, 2, 3, 4], format_func=lambda x: {1: 'Arcilloso', 2: 'Arenoso', 3: 'Limoso', 4: 'Franco'}.get(x, 'Desconocido'))
     pH = st.number_input("pH del suelo", min_value=0.0, max_value=14.0, step=0.1)
@@ -44,7 +44,11 @@ elif menu == "Agregar Registro":
     densidad = st.number_input("Densidad", min_value=0.0, step=0.1)
     altitud = st.number_input("Altitud", min_value=0.0, step=0.1)
     
-    if st.button("Registrar Nuevo Suelo"):
+    if st.button("Predecir Fertilidad y Cultivo"):
+        # Aquí se podría agregar la lógica de predicción antes del registro
+        st.write("(Aquí se mostrará la predicción antes de registrar el suelo)")
+
+    if st.button("Registrar Nuevo Suelo"): 
         fecha_registro = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         new_record = {
             "fecha_registro": fecha_registro,
